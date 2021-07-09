@@ -1,0 +1,55 @@
+<!DOCTYPE html><html lang="zh"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="icon" href="/favicon.png"><link rel="alternate" type="application/rss+xml" title="鱼跃此时海" href="https://jysperm.me/atom.xml"><link rel="stylesheet" href="/styles.css"><title>标签：校园网 | 鱼跃此时海</title><meta name="generator" content="Hexo 5.4.0"></head><body><div class="container"><div class="columns page-header"><h1>鱼跃此时海</h1></div><div class="columns"><div class="navigation"><nav class="menus-main"><a href="/" class="favicon"><img alt="鱼跃此时海" src="/favicon.png"></a><a href="/">Home</a></nav><nav class="right menus-right"><a target="_blank" href="https://github.com/chillsoul/chillsoul.github.io">Fork on Github</a></nav></div></div><div class="columns"><div class="block-body column three-fourths"><div class="article-widget"><text>"Welcome !"</text></div><div class="article-widget"><strong>标签 #校园网</strong></div><article><header><h2><a href="/2021/07/09/srun3k-auto-login-with-esp8266/">深澜校园网使用路由器并自动认证上网</a></h2></header><div class="article-meta clearfix"><time class="left">2021-07-09</time><ul class="tags left"></ul><ul class="tags right"><li><a href="/tags/%E6%A0%A1%E5%9B%AD%E7%BD%91/">校园网</a></li><li><a href="/tags/%E6%B7%B1%E6%BE%9C/">深澜</a></li><li><a href="/tags/Srun3k/">Srun3k</a></li><li><a href="/tags/%E8%81%94%E9%80%9A/">联通</a></li></ul></div><div class="markdown-body"><h2 id="前言与理论"><a href="#前言与理论" class="headerlink" title="前言与理论"></a>前言与理论</h2><p>我校的联通校园网采用<code>深澜Portal认证</code>方案，接入无线或有线网络后通过<code>DHCP协议</code>动态分配IP，但仅支持一台终端使用客户端登陆上网。</p>
+<p>而<code>DHCP协议</code>通过<code>MAC地址</code>来分配<code>IP</code>，如果你具有一些<code>计算机网络</code>知识（不具备也无所谓，我也忘差不多了，以下描述可能有错误）：</p>
+<ol>
+<li><p>当你使用路由器连接校园网时，路由器下的所有设备处于<code>同一局域网</code>。</p>
+</li>
+<li><p>局域网内的通信使用<code>MAC地址</code>。</p>
+</li>
+<li><p>当你需要与更上一层的网络交换数据时，首先发送给你自己的路由器，由它<code>转发</code>给校园网的路由器。</p>
+</li>
+<li><p>你的路由器与校园网路由器处于<code>另一个局域网</code>。</p>
+</li>
+<li><p>当你与外网通信时，数据再次经过校园网路由器<code>向外转发</code>（在此之前，校园网路由器会对你的身份进行验证，即该<code>MAC地址</code>/<code>内网IP</code>是否已经认证）。</p>
+</li>
+</ol>
+<p>因此，在校园网路由器看来，你的路由器下的所有设备只有一个<code>MAC地址</code>（就是路由器的MAC地址），或者是只有一个<code>内网IP</code>（即路由器MAC地址通过<code>DHCP</code>分配到的动态IP），那么他将无法识别到实际上现在有好多设备都在用校园网。</p>
+<h2 id="路由器"><a href="#路由器" class="headerlink" title="路由器"></a>路由器</h2><p>经过分析呢，我们已经知道，在我校的深澜校园网认证方案中呢，使用路由器实现多设备上网是完全可行的，</p>
+<p>具体使用方法：</p>
+<ol>
+<li><p>路由器连接电源。</p>
+</li>
+<li><p>将路由器<code>WAN口</code>通过网线连接至小白盒或下铺（桌）网口。</p>
+</li>
+<li><p>使用手机或电脑设备连接指路由器，并使用深澜认证客户端登陆校园网。</p>
+</li>
+<li><p>畅享40M小水管~</p>
+</li>
+</ol>
+<h2 id="自动登录方案①"><a href="#自动登录方案①" class="headerlink" title="自动登录方案①"></a>自动登录方案①</h2><p>虽然已经使用了路由器，在用电脑的时候可以省下手机流量了，但是！</p>
+<ol>
+<li><p>如果你登陆校园网的设备（尤其电脑）关机，有可能导致客户端向校园网发送下线请求，导致路由器下所有设备断网。</p>
+</li>
+<li><p>深澜校园网每24小时会自动掉线。</p>
+</li>
+<li><p>每月1号凌晨校园网维护断网。</p>
+</li>
+<li><p>官方登录器BUG，点击下线有时并不会真的下线，再次登陆会出现Limit Users Error。</p>
+</li>
+</ol>
+<p>基于以上原因呢，<a target="_blank" rel="noopener" href="https://github.com/ehaut">EHAUT</a>的开发者们开发了各种各样更好用的校园网登录器，我通过学习他们的代码，使用<a target="_blank" rel="noopener" href="https://www.arduino.cc/">Arduino</a>开发了一个<a target="_blank" rel="noopener" href="https://github.com/chillsoul/ESP8266-Srun3kAutoLogin">ESP8266开发板版本的校园网自动登录程序</a>。</p>
+<p>你只需要购买一块<code>ESP8266 NodeMCU开发板</code>，成本大概十几二十元，填入路由器WiFi和校园网密码后刷入程序，插电即可实现校园网的自动登录（若断电则失效，建议整个有USB口的路由器，省的专门买个插头）。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//sketch_sep21a.ino top</span></span><br><span class="line"><span class="keyword">const</span> <span class="keyword">char</span>* ssid = <span class="string">&quot;你的路由器名称&quot;</span>;</span><br><span class="line"><span class="keyword">const</span> <span class="keyword">char</span>* sspw = <span class="string">&quot;路由器WiFi密码&quot;</span>;</span><br><span class="line"><span class="keyword">const</span> <span class="keyword">char</span>* stuno = <span class="string">&quot;学号&quot;</span>;</span><br><span class="line"><span class="keyword">const</span> <span class="keyword">char</span>* stupw = <span class="string">&quot;校园网密码&quot;</span>;</span><br></pre></td></tr></table></figure>
+
+<h2 id="自动登录方案②"><a href="#自动登录方案②" class="headerlink" title="自动登录方案②"></a>自动登录方案②</h2><p>或许你并不愿意为了一个自动登录专门买一块没什么其他用处的ESP8266开发板，那么还有一个解决方案，就是买个支持<code>OpenWrt</code>或<code>Padavan</code>系统的路由器。例如拼多多斐讯K2，刷好系统大概四十元。</p>
+<p>这两个系统支持SSH登陆、执行Shell脚本，因此我们可以使ESP8266的功能由路由器来实现。</p>
+<p>具体的教程参见<a target="_blank" rel="noopener" href="https://blog.raincorn.top/2020/10/02/srun_login/">胡大佬的博客</a>，实现原理为在路由器上利用<code>wget</code>或<code>curl</code>来使用HTTP协议发送登陆数据包，并设置<code>crontab</code>或自动重启实现不掉线。</p>
+<h2 id="最后"><a href="#最后" class="headerlink" title="最后"></a>最后</h2><p>在使用路由器和自动登陆快一年后，感觉20M（最近偷偷升级到了40M）的速率还是太慢了，我通过学习<a target="_blank" rel="noopener" href="https://wordpress.peterfile.top/">Pete带佬</a>的文章，利用<code>OpenWrt</code>的<code>mwan3</code>插件实现了多拨合并，使用宿舍5个校园网账号时，实测WeGame下载游戏可以达到22M/S，开启<code>SQM-QoS</code>后可以满足便下载边打游戏，下次有时间出一篇教程。</p>
+</div></article><div class="archive-pagination"><div class="paginator"><span class="page-number current">1</span></div></div></div><div class="block-sidebar column one-fourth"><div class="widget text-content"><img src="/avatar.jpg" width="30%" height="30%">
+
+<p>Wang</p>
+<p><a target="_blank" rel="noopener" href="https://github.com/chillsoul">GitHub</a></p>
+<p>熟悉C/C++、Java等多种编程语言的拼写。</p>
+<p>一个脱离了高级趣味的人。</p>
+<p>在这里记录一点无聊的事。</p>
+<p>Contact: No Door &amp; No Window</p>
+</div><div class="widget tags"><ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Hexo/" rel="tag">Hexo</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Srun3k/" rel="tag">Srun3k</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/leap-fish/" rel="tag">leap.fish</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%9F%9F%E5%90%8D/" rel="tag">域名</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%A0%A1%E5%9B%AD%E7%BD%91/" rel="tag">校园网</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%B7%B1%E6%BE%9C/" rel="tag">深澜</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E8%81%94%E9%80%9A/" rel="tag">联通</a></li></ul></div><div class="widget archives"><ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/07/">July 2021</a><span class="archive-list-count">2</span></li></ul></div><div class="widget text-content"><p>该博客使用基于 &nbsp;<a target="_blank" rel="noopener" href="http://hexo.io">Hexo</a>&nbsp; 的 &nbsp;<a target="_blank" rel="noopener" href="https://github.com/jysperm/hexo-theme-simpleblock">simpleblock</a>&nbsp; 主题。博客内容使用 &nbsp;<a target="_blank" rel="noopener" href="http://creativecommons.org/licenses/by-nc-sa/3.0/cn">CC BY-NC-SA 3.0</a>&nbsp; 授权发布。最后生成于 2021-07-09.</p></div></div></div></div></body></html>
